@@ -1,5 +1,12 @@
 #!/bin/bash
 
+######################
+## Utility Function ##
+######################
+function sedlit {
+  sed -i "s/$(echo $1 | sed -e 's/\([[\/.*]\|\]\)/\\&/g')/$(echo $2 | sed -e 's/[\/&]/\\&/g')/g" $3
+}
+
 #####################
 ## Setup locations ##
 #####################
@@ -75,6 +82,15 @@ if [[ -d $location/build-input/enigma2 ]]; then
     lamedb=$(<"$location/build-input/enigma2/lamedb")
     channelcount=$(cat "$location/build-input/enigma2/"*bouquet.* | grep -o '#SERVICE .*:0:.*:.*:.*:.*:.*:0:0:0' | sort -u | wc -l)
 
+    # Load optional configuration params
+    # if [[ -e  $location/build-input/enigma2-provider.conf ]]; then
+    #   source $location/build-input/enigma2-provider.conf
+    # else
+    #   # default options here
+    #   prefixignores=()
+    #   suffixignores=()
+    # fi
+
     cat $location/build-input/enigma2/*bouquet.* | grep -o '#SERVICE .*:0:.*:.*:.*:.*:.*:0:0:0' | sed -e 's/#SERVICE //g' -e 's/.*/\U&\E/' -e 's/:/_/g' | sort -u | while read serviceref ; do
         ((currentline++))
         echo -ne "Enigma2: Converting channel: $currentline/$channelcount"\\r
@@ -82,13 +98,29 @@ if [[ -d $location/build-input/enigma2 ]]; then
         serviceref_id=$(sed -e 's/^[^_]*_0_[^_]*_//g' -e 's/_0_0_0$//g' <<< "$serviceref")
         unique_id=${serviceref_id%????}
         channelref=(${serviceref//_/ })
-        channelname=$(grep -i -A1 "${channelref[3]}:.*${channelref[6]}:.*${channelref[4]}:.*${channelref[5]}:.*:.*" <<< "$lamedb" | sed -n "2p" | iconv -f utf-8 -t ascii//translit 2>> $logfile | sed -e 's/^[ \t]*//' -e 's/|//g' -e 's/^//g')
-
+        # if [ ${#prefixignores[@]} -eq 0 ]; then
+          channelname=$(grep -i -A1 "${channelref[3]}:.*${channelref[6]}:.*${channelref[4]}:.*${channelref[5]}:.*:.*" <<< "$lamedb" | sed -n "2p" | iconv -f utf-8 -t ascii//translit 2>> $logfile | sed -e 's/^[ \t]*//' -e 's/|//g' -e 's/^//g')
+        # else
+        #   tempname=$(grep -i -A1 "${channelref[3]}:.*${channelref[6]}:.*${channelref[4]}:.*${channelref[5]}:.*:.*" <<< "$lamedb" | sed -n "2p" | iconv -f utf-8 -t ascii//translit 2>> $logfile | sed -e 's/^[ \t]*//' -e 's/|//g' -e 's/^//g')
+        #   for prefix in "${prefixignores[@]}"; do
+        #     tempname=$(echo ${tempname/^$prefix//})
+        #   done
+        #   channelname=$tempname
+        # fi
+        # if [ ${#suffixignores[@]} -ne 0 ]; then
+        #   tempname=$channelname
+        #   for suffix in "${suffixignores[@]}"; do
+        #     tempname=$(echo ${tempname/$suffix$//})
+        #   done
+        #   channelname=$tempname
+        # fi
+        echo -e $channelname >> a.out
         logo_srp=$(grep -i -m 1 "^$unique_id" <<< "$index" | sed -n -e 's/.*=//p')
         if [[ -z $logo_srp ]]; then logo_srp="--------"; fi
 
         if [[ $style = "snp" ]]; then
             snpname=$(sed -e 's/&/and/g' -e 's/*/star/g' -e 's/+/plus/g' -e 's/\(.*\)/\L\1/g' -e 's/[^a-z0-9]//g' <<< "$channelname")
+            echo $snpname >> a.out
             if [[ -z $snpname ]]; then snpname="--------"; fi
             logo_snp=$(grep -i -m 1 "^$snpname=" <<< "$index" | sed -n -e 's/.*=//p')
             if [[ -z $logo_snp ]]; then logo_snp="--------"; fi
@@ -163,7 +195,7 @@ if [[ -f $location/build-input/tvheadend.serverconf ]]; then
 
     # ...the server url
     [[ -n $TVH_USER ]] && url="http://$TVH_USER:$TVH_PASS@$TVH_HOST:$TVH_PORT" || url="http://$TVH_HOST:$TVH_PORT"
-  
+
     # ...reading the number of channel from the server
     channelcount=$(curl -s $url'/api/channel/grid?start=0&limit=1' | jq -r '.total' )
 
