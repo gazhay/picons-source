@@ -13,17 +13,40 @@ At the end of any issue you should place the following text `donkey monkey got i
 
 # NAMING
 
-__Serviceref:__
+__srp-index:__
+
+Contains partial Enigma2 service references, establishing a link between the actual logos in this repository.
 
 - UPPERCASE
 - Only the part `296_5_85_C00000` is used, the parts `1_0_1_` and `_0_0_0` must be removed.
+
+__snp-index:__
+
+Contains simplified channel names according an OpenVIX implementation, called SNP, establishing a link between the actual logos in this repository.
+
+SNP names are constructed by the following rules:
+
+- lowercase
+- letters `a to z`
+- numbers `0 to 9`
+- replace `&` with `and`
+- replace `+` with `plus`
+- replace `*` with `star`
+
+This obviously means that spaces and other characters are not allowed.
+
+Examples:
+
+- `5*` => `5star`
+- `Sony Chnl +1` => `sonychnlplus1`
+- `BT Sport//ESPN` => `btsportespn`
 
 __Logo:__
 
 - LOWERCASE
 - NO spaces, fancy symbols or `.-+_*`, except for the exceptions below.
 - Time sharing channels are seperated by `_`.
-- If the logo name you wish to use already exists, add a unique identifier like `-trechuhipe`, this is a pronounceable random 10 character string generated using [this](http://www.generate-password.com) password generator. Grouping togheter logos using the same unique identifier is possible.
+- If the logo name you wish to use already exists, add a unique identifier like `-trechuhipe`, this is a pronounceable random 10 character string generated using [this](http://www.generate-password.com) password generator. Grouping logos together using the same unique identifier is possible.
 - Filetype `svg` is the way to go, otherwise `png`.
 - The resolution doesn't matter for `svg`, for `png` try to get it > 800px.
 - When submitting `svg` files, make sure to convert `text` to `paths`.
